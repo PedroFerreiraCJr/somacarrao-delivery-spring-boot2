@@ -117,6 +117,10 @@ public class OrderService {
 		final User user = userRepository.findByEmail(email)
 				.orElseThrow(() -> new ValidationException("Usuário inválido"));
 
+		if (!order.getClient().getEmail().equals(user.getEmail())) {
+			throw new ValidationException("Usuario do pedido é diferente do usuário informado");
+		}
+		
 		// processa o status do pedido
 		// Novo para Confirmado
 		if (order.getStatus().equals(OrderStatus.NEW) && !dto.getStatus().equals(OrderStatus.CONFIRMED)) {
