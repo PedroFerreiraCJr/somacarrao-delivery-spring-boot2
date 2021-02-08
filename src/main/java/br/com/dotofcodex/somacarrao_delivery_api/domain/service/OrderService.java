@@ -108,6 +108,11 @@ public class OrderService {
 		return repository.save(pedido);
 	}
 
+	/**
+	 * Firebase Admin SDK Documentation
+	 * 	https://github.com/firebase/firebase-admin-java/blob/master/src/test/java/com/google/firebase/snippets/FirebaseMessagingSnippets.java
+	 * 	https://github.com/firebase/firebase-admin-java
+	 */
 	public String updateOrderStatus(String jwt, Long id, OrderStatusDTO dto) {
 		final Order order = repository.findById(id)
 				.orElseThrow(() -> new OrderNotFoundException("Pedido não encontrado"));
