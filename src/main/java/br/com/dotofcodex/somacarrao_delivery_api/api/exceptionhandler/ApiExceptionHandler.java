@@ -2,7 +2,13 @@ package br.com.dotofcodex.somacarrao_delivery_api.api.exceptionhandler;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -24,6 +30,7 @@ import br.com.dotofcodex.somacarrao_delivery_api.domain.exception.BaseBindingRes
 import br.com.dotofcodex.somacarrao_delivery_api.domain.exception.OrderIllegalStateException;
 import br.com.dotofcodex.somacarrao_delivery_api.domain.exception.OrderNotFoundException;
 import br.com.dotofcodex.somacarrao_delivery_api.domain.exception.UserAlreadyExistsException;
+import br.com.dotofcodex.somacarrao_delivery_api.domain.exception.UserNotFoundException;
 import br.com.dotofcodex.somacarrao_delivery_api.domain.exception.ValidationException;
 
 @ControllerAdvice
@@ -52,9 +59,16 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 				new ErrorResponse(HttpStatus.BAD_REQUEST.value(), OffsetDateTime.now(), ex.getMessage()),
 				new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
 	}
-	
+
 	@ExceptionHandler(OrderNotFoundException.class)
 	public ResponseEntity<Object> handleException(OrderNotFoundException ex, WebRequest request) {
+		return handleExceptionInternal(ex,
+				new ErrorResponse(HttpStatus.NOT_FOUND.value(), OffsetDateTime.now(), ex.getMessage()),
+				new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+	}
+
+	@ExceptionHandler(UserNotFoundException.class)
+	public ResponseEntity<Object> handleException(UserNotFoundException ex, WebRequest request) {
 		return handleExceptionInternal(ex,
 				new ErrorResponse(HttpStatus.NOT_FOUND.value(), OffsetDateTime.now(), ex.getMessage()),
 				new HttpHeaders(), HttpStatus.NOT_FOUND, request);
@@ -71,6 +85,19 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	public ResponseEntity<Object> handleException(BaseBindingResultException ex, WebRequest request) {
 		return super.handleExceptionInternal(ex, createErrorResponse(ex.getBindingResult(), ex, ex.getMessage()),
 				new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+	}
+
+	@ExceptionHandler(ConstraintViolationException.class)
+	public ResponseEntity<Set<String>> handleConstraintViolation(ConstraintViolationException e) {
+		Set<ConstraintViolation<?>> constraintViolations = e.getConstraintViolations();
+
+		Set<String> messages = new HashSet<>(constraintViolations.size());
+		messages.addAll(constraintViolations.stream()
+				.map(constraintViolation -> String.format("%s value '%s' %s", constraintViolation.getPropertyPath(),
+						constraintViolation.getInvalidValue(), constraintViolation.getMessage()))
+				.collect(Collectors.toList()));
+
+		return new ResponseEntity<>(messages, HttpStatus.BAD_REQUEST);
 	}
 
 	private ErrorResponse createErrorResponse(BindingResult errors, Exception ex, String title) {

@@ -45,6 +45,10 @@ public class User extends BaseEntity implements UserDetails {
 	private Boolean enabled;
 
 	@Transient
+	@JsonIgnore
+	private String passwordConfirmation;
+
+	@Transient
 	private String jwtToken;
 
 	@ManyToMany(fetch = FetchType.EAGER)
