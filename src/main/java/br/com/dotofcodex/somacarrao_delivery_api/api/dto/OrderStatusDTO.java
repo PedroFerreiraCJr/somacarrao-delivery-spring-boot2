@@ -1,6 +1,6 @@
 package br.com.dotofcodex.somacarrao_delivery_api.api.dto;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -18,6 +18,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OrderStatusDTO {
-	@NotBlank
+	@NotNull
 	private OrderStatus status;
 }
